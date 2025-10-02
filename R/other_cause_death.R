@@ -97,7 +97,8 @@ filter_multiple_cancers <- function(data, cancer_sites) {
     pivot_longer(cols = c(Female, Male), names_to = "Gender", values_to = "Population") %>% 
     filter(Year %in% 2018:2022) %>% 
     select(Year, Age, Gender, Population) %>% 
-    mutate(Age = as.numeric(Age))
+    mutate(Age = as.numeric(Age))%>%
+    filter(!is.na(Age))
   
   # Process all cause CDC and HMD data to generate all cause death rates 
   all_cause_death_rate <- cdc_data %>% 
