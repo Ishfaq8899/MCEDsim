@@ -62,29 +62,3 @@ who are diagnosed in early stage under screening but who would have been diagnos
 For both screened and unscreened individuals, cancer mortality is projected from the point of clinical diagnosis (i.e., post lead-time) to prevent
 lead-time bias.
 }
-\examples{
-library(MCEDsim)
-#Load the prefitted natural history models
-data("combined_fits")
-#Load the prefitted cause-specific survival models
-data("parametric_surv_fits")
-
-#' # Cancer sites in the MCED test
-cancer_sites_vec <- c("Anus", "Bladder", "Breast", "Esophagus",
-                     "Gastric", "Headandneck", "Liver", 
-                     "Lung", "Pancreas", "Prostate", "Renal", "Uterine", "Ovary")
-
-result <- sim_individual_MCED(
-  ID = 1,
-  cancer_sites = cancer_sites_vec,
-  rates_list = example_rates_list,
-  test_performance = example_test_perf,
-  other_cause_death_dist = example_death_dist,
-  starting_age = 50,
-  num_screens = 5,
-  screen_interval = 1,
-  end_time = 90,
-  sex = "Male",
-  surv_param_table = param_table
-)
-}
