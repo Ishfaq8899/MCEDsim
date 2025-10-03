@@ -29,36 +29,9 @@
 #' @param end_time Ending time (age) of simulation.
 #' @param sex "Male" or "Female".
 #' @param surv_param_table Survival parameters table (for simulating cancer death).
-#' @export
 #'
 #' @return A data frame with the individual's first-cancer outcomes (onset, screen/clinical diagnosis times and stages),
 #' cancer death times with/without screening, and other-cause death.
-#' 
-#' @examples
-#' library(MCEDsim)
-#' #Load the prefitted natural history models
-#' data("combined_fits")
-#' #Load the prefitted cause-specific survival models
-#' data("parametric_surv_fits")
-#' 
-#' #' # Cancer sites in the MCED test
-#' cancer_sites_vec <- c("Anus", "Bladder", "Breast", "Esophagus",
-#'                      "Gastric", "Headandneck", "Liver", 
-#'                      "Lung", "Pancreas", "Prostate", "Renal", "Uterine", "Ovary")
-#' 
-#' result <- sim_individual_MCED(
-#'   ID = 1,
-#'   cancer_sites = cancer_sites_vec,
-#'   rates_list = example_rates_list,
-#'   test_performance = example_test_perf,
-#'   other_cause_death_dist = example_death_dist,
-#'   starting_age = 50,
-#'   num_screens = 5,
-#'   screen_interval = 1,
-#'   end_time = 90,
-#'   sex = "Male",
-#'   surv_param_table = param_table
-#' )
 sim_individual_MCED<-function( ID, 
                                cancer_sites,
                                rates_list,
@@ -377,7 +350,6 @@ sim_multiple_individuals_MCED_parallel_universe <- function(cancer_sites,
   }
   combined_results=combined_results%>%mutate(start_age=starting_age,end_time=ending_age)
   
-  
   #Process data with other cause death as a censoring event
   #Ascertain age at at screen and clinical diagnosis in presence of other cause death
   #Ascertain age at death under screening scenarios and no screening scenarios in presence of other cause death
@@ -479,7 +451,48 @@ sim_multiple_individuals_MCED_parallel_universe <- function(cancer_sites,
 #' The function returns each individual's first cancer site,  age and stage of clinical diagnosis in 
 #' absence of screening, age and stage at screen diagnosis, the time of other-cause mortality, and the time of cancer-specific mortality in absence
 #' and presence of screening.   Cancer diagnosis and death times are presented both with and without competing other-cause mortality.
-
+#' @examples
+#' library(MCEDsim)
+#' #Load the other-cause mortality tables
+#' data("cdc_hmd_data")
+#' #Load the prefitted natural history models
+#' data("combined_fits")
+#' #Load the prefitted cause-specific survival models
+#' data("parametric_surv_fits")
+#' #Specify inputs
+#' #Cancer sites in the MCED test
+#' cancer_sites_vec=c("Anus",  "Bladder",  "Breast", "Esophagus",
+#'                   "Gastric", "Headandneck","Liver" , 
+#'                   "Lung",   "Pancreas", "Prostate", "Renal",  "Uterine","Ovary")
+#'
+#' #overall mean sojourn time=2 years for all sites
+#' OMST_vec=rep(2,times=13)
+#' #late mean sojourn time=.5 years for all sites
+#' LMST_vec=rep(.5,times=13)
+#' #early-stage sensitivity
+#' early_sens=rep(.65,times=13)
+#' #late-stage sensitivity
+#' late_sens=rep(.95,times=13)
+#' #dataframe with all of the test performance inputs
+#' test_performance_dataframe = data.frame(early_sens, late_sens,cancer_site = cancer_sites_vec)
+#' #Specify ages at entry, sex, and study arm
+#' input_table=data.frame(sex=c("M","F"),counts=c(120,120),age_entry=c(55,60),arm=c("C","S"))
+#' results <- sim_MCED_trial(input_table,
+#'                          cancer_sites=cancer_sites_vec,
+#'                          num_screens=3,
+#'                           screen_interval=1,
+#'                           LMST_vec=LMST_vec,
+#'                           OMST_vec=OMST_vec,
+#'                           test_performance_dataframe=test_performance_dataframe,
+#'                           MCED_specificity=.995,
+#'                           all_rates_male=all_rates_male,
+#'                           all_rates_female=all_rates_female,
+#'                           all_meta_data_female=all_meta_data_female,
+#'                           all_meta_data_male=all_meta_data_male,
+#'                           cdc_data=all_cause_cdc,
+#'                           hmd_data=hmd_data,
+#'                           MCED_cdc=MCED_cdc,
+#'                           surv_param_table=param_table)
 sim_MCED_trial <- function(input_table,
                            cancer_sites,
                            trial_duration,
@@ -499,7 +512,7 @@ sim_MCED_trial <- function(input_table,
                            surv_param_table){
   
 
-browser()
+
 input_table<-input_table %>% mutate(num_females=ifelse(sex=="F",counts,0),num_males=ifelse(sex=="M",counts,0),ending_age=age_entry+trial_duration) 
 # Use mapply to simulate individuals based on input data
 results_list <- mapply(function(num_females,num_males, starting_age, ending_age,arm){
@@ -535,14 +548,46 @@ SIMPLIFY = FALSE)
 # Combine all results into one data frame
 combined_results <- do.call(rbind, results_list)
 
-#STOPPED HERE: notes need to update the issues document since I solved the issue about simulating only men or women. 
-#Output for screen arm and control arm will be needed to be tailored. 
+combined_results<-combined_results %>% mutate(cancer_death_time=ifelse(arm=="S",cancer_death_time_screen,cancer_death_time_no_screen),
+                                              age_dx=ifelse(arm=="S",clin_dx_age,diagnosis_age_screen_scenario),
+                                              dx_event=ifelse(arm=="S",clin_dx_event, diagnosis_event_screen_scenario),
+                                              stage_dx=ifelse(arm=="S",clin_dx_event_stage,diagnosis_event_stage_screen_scenario),
+                                              age_death=ifelse(arm=="S",death_age_no_screen,death_age_screen),
+                                              death_event=ifelse(arm=="S",death_event_no_screen,death_event_screen))%>%
+                    select(ID,
+                           sex,
+                           arm,
+                           start_age,
+                           end_time,
+                           total_no_canc_screens,
+                           FP_tot,
+                           cancer_site,
+                           clinical_diagnosis_time,
+                           clinical_diagnosis_stage,
+                           onset_time,
+                           late_onset_time,
+                           screen_diagnosis_time,
+                           screen_diagnosis_stage,
+                           other_cause_death_status,
+                           other_cause_death_time,
+                           cancer_death_time,
+                           age_dx,
+                           dx_event,
+                           stage_dx,
+                           age_death,
+                           death_event,
+                           overdiagnosis)
 
 
 return(combined_results)
 }
 
+	
 
+
+
+
+	
 
 
 
