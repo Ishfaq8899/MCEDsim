@@ -126,7 +126,7 @@ sim_individual_MCED<-function( ID,
     result<-slice_head(result,n=1)%>%mutate(cancer_site=NA)
   } 
 
-  set.seed(ID)
+
   result<-result %>% mutate(FP_tot=rbinom(n(),size=total_no_canc_screens,prob=1-MCED_specificity))
 
   return(result)
@@ -244,6 +244,7 @@ sim_multiple_individuals_MCED_parallel_universe <- function(cancer_sites,
                                                             surv_param_table){
   
   
+ 
   # Create a vector of IDs
   if(num_males>0){
     IDs_male <- 1:num_males
