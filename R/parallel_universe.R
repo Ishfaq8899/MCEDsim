@@ -74,6 +74,9 @@ sim_individual_MCED<-function( ID,
   # Add other-cause death info
   result$other_cause_death_status <- other_cause_death$status
   result$other_cause_death_time <- other_cause_death$time
+  if(result$other_cause_death_time<starting_age){
+    browser()
+  }
   result$sex=sex
   #-----------------------  
   # Identify first cancer by onset time
