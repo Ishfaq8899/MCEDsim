@@ -9,6 +9,12 @@ gettime<-function(time,surv){
   unif1=runif(n=1)
   cdf=1-surv
   
+  time=time[cdf>0]
+  cdf=cdf[cdf>0]
+  
+  time=c(min(time)-1,time)
+  cdf=c(0,cdf)
+  
   eventtime=approx(x=cdf, y=time, xout=unif1, rule=2)$y
   
   eventstatus=ifelse(eventtime==max(time),0,1)
