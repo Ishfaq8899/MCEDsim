@@ -305,9 +305,11 @@ sim_multiple_individuals_MCED_parallel_universe <- function(cancer_sites,
   
   if(num_females>0){
     # Extract rate matrices (Female)
+   
     rates_list_female = get_filtered_rates(the_omsts = OMST_vec, the_lmsts = LMST_vec, 
                                            all_meta_data = all_meta_data_female, 
                                            all_rates = all_rates_female, the_cancer_site = cancer_sites)
+  
     sites_female = rates_list_female$cancer_sites 
     rates_list_female = rates_list_female$rates_list                                    
     
