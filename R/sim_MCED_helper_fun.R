@@ -53,7 +53,6 @@ get_init <- function(rate.matrix, a1) {
   for (j in 1:(k - 2)) {
     init[j] <- prob_mat_a1[1, j] / denom
   }
-  
   init_state <- sample(1:k, size = 1, prob = init)
   return(init_state)
 }

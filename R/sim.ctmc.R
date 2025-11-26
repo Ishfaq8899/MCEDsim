@@ -220,6 +220,9 @@ get.obs.data.individual <- function(ID, rate.matrix, emission.matrix,
     onset_time=min(trajectory$times[trajectory$states==pre_clin_early_state])
    # browser()
   }
+  if(min(trajectory$states)==pre_clin_late_state){
+    onset_time=start.time
+  }
 
   if(pre_clin_late_state%in%trajectory$states){
     late_onset_time=min(trajectory$times[trajectory$states==pre_clin_late_state])

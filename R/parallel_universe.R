@@ -50,7 +50,7 @@ sim_individual_MCED<-function( ID,
   
   # Get the starting states for each cancer
   start_states= unlist(lapply(rates_list, FUN="get_init",a1=starting_age))
-
+ 
   ### get the screening times
   screen_times = seq((starting_age),(num_screens + starting_age-1), by=screen_interval)
   
@@ -60,6 +60,7 @@ sim_individual_MCED<-function( ID,
   #set cancer site specificity=1 because we are not tracking FP on a per cancer basis
   the_specificities=rep(1,times=num_sites)
   
+
   result <- sim_multiple_cancer_indiv(ID = ID,
                                         cancer_sites = cancer_sites,
                                         rate_matrices = rates_list,
@@ -75,9 +76,9 @@ sim_individual_MCED<-function( ID,
   result$other_cause_death_status <- other_cause_death$status
   result$other_cause_death_time <- other_cause_death$time
 
-   if(other_cause_death$time<starting_age){
-    browser()
-  }
+  # if(other_cause_death$time<starting_age){
+  #  browser()
+  #}
   result$sex=sex
   #-----------------------  
   # Identify first cancer by onset time
